@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reverse-proxy
+  namespace: ggce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reverse-proxy
+  template:
+    metadata:
+      labels:
+        app: reverse-proxy
+    spec:
+      serviceAccountName: traefik
+      containers:
+      - name: reverse-proxy
+        image: traefik:v2.10
+        args:
+          - --api.insecure=true
+          - --providers.kubernetesIngress=true
+          - --entrypoints.web.address=:80
+          - --entrypoints.websecure.address=:443
+        ports:
+        - name: web
+          containerPort: 80
+        - name: websecure
+          containerPort: 443
+        - name: admin
+          containerPort: 8080
+        volumeMounts:
+        - name: traefik-config
+          mountPath: /opt/traefik
+      volumes:
+      - name: traefik-config
+        configMap:
+          name: traefik-config

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ggce-api
+  namespace: ggce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ggce-api
+  template:
+    metadata:
+      labels:
+        app: ggce-api
+    spec:
+      containers:
+      - name: ggce-api
+        image: dockerhub.croptrust.org/grin-global/grin-global-server:2024.3
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:sqlserver://34.136.153.73:1433;databaseName=ggce
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: sql-db-credentials
+              key: DB_USER
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sql-db-credentials
+              key: DB_PASSWORD
+        - name: BASE_URL
+          value: http://34.135.110.177/api
+        - name: FRONTEND_URL
+          value: http://34.135.110.177
+        - name: CACHE_LIBRARY
+          value: ehcache
+        - name: JAVA_OPTIONS
+          value: >-
+            -Xlog:gc -XX:+UseG1GC -XX:MinRAMPercentage=50.0 -XX:MaxRAMPercentage=90.0
+            -Djava.awt.headless=true -server -Dnetworkaddress.cache.ttl=60
+            -Dcom.sun.security.enableAIAcaIssuers=true --add-modules java.se
+            --add-exports java.base/jdk.internal.ref=ALL-UNNAMED
+            --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED
+            --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.management/sun.management=ALL-UNNAMED
+            --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED
+        ports:
+        - containerPort: 8080
+      - name: cloud-sql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.19.1
+        command:
+        - /cloud_sql_proxy
+        - -instances=accessible-ggce:us-central1:ggce-sql-instance=tcp:1433
+        - -credential_file=/secrets/cloudsql/key.json
+        volumeMounts:
+        - name: cloudsql-instance-credentials
+          mountPath: /secrets/cloudsql
+          readOnly: true
+      volumes:
+      - name: cloudsql-instance-credentials
+        secret:
+          secretName: cloudsql-instance-credentials

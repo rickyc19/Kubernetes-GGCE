@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ggce-ingress
+  namespace: ggce
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: 34.135.110.177.nip.io
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: ggce-api
+            port:
+              number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ggce-ui
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - 34.135.110.177.nip.io
+    secretName: ggce-tls

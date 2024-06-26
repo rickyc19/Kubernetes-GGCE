@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ggce-ui
+  namespace: ggce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ggce-ui
+  template:
+    metadata:
+      labels:
+        app: ggce-ui
+    spec:
+      containers:
+      - name: ggce-ui
+        image: dockerhub.croptrust.org/grin-global/grin-global-ui/gg-ce-web:2024.3
+        env:
+        - name: API_URL
+          value: http://34.135.110.177.nip.io/api
+        - name: API_URL_INTERNAL
+          value: http://ggce-api.ggce.svc.cluster.local:8080
+        - name: ORIGIN
+          value: http://34.135.110.177.nip.io
+        - name: NAME
+          value: Genebank Information System
+        - name: NAME_SHORT
+          value: Kira
+        - name: MENU_COLOR
+          value: '#683a29'
+        ports:
+        - containerPort: 80
+      imagePullSecrets:
+      - name: gcr-json-key
