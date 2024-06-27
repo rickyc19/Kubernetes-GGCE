@@ -17,14 +17,14 @@ spec:
       - name: ggce-api
         image: dockerhub.croptrust.org/grin-global/grin-global-server:2024.3
         env:
-        - name: SPRING_DATASOURCE_URL
-          value: jdbc:sqlserver://34.136.153.73:1433;databaseName=ggce
-        - name: SPRING_DATASOURCE_USERNAME
+        - name: DB_URL
+          value: jdbc:sqlserver://172.27.32.3:1433;DatabaseName=ggce
+        - name: DB_USERNAME
           valueFrom:
             secretKeyRef:
               name: sql-db-credentials
               key: DB_USER
-        - name: SPRING_DATASOURCE_PASSWORD
+        - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: sql-db-credentials
